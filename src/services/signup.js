@@ -1,11 +1,12 @@
-const server = require('./http');
-const storage = require('./storage');
+const server = require('./http')
+const storage = require('./storage')
+const sync = require('./sync')
 
 module.exports = (signupData) => {
   server.post('/signup', signupData)
   .then((res) => {
-    console.log(res.data)
     storage.storeConfig(res.data['id'], res.data['token'])
+    sync.namaSync()
   })
   .catch((err) => {
     console.log(err)

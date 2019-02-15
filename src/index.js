@@ -13,7 +13,7 @@ function namaSyncInit() {
   if(shell.which('nama-sync-helper')) {
     config = storage.getConfig()
     if(config) {
-      sync.initialSync();
+      sync.checkForChanges()
     }else {
       //Account signup/login
       install();
@@ -27,8 +27,6 @@ function namaSyncInit() {
 
 const args = minimist(process.argv.slice(2))
 
-console.log(args._)
-
 if(args._[0] == 'logout') {
   storage.deleteConfig();
   console.log("You have been logged out.")
@@ -37,7 +35,6 @@ if(args._[0] == 'logout') {
 
 //namespace add/remove [namespace] [description]
 if(args._[0] == 'namespace') {
-  console.log(1)
   if(args._[1] && args._[2]) {
     if(args._[1] == 'add') {
       return sync.addNamespace(args._[2], args._[3])
@@ -51,7 +48,7 @@ if(args._[0] == 'namespace') {
 
 //command add/remove [commandName] [command] [updatedAt] [description]
 if(args._[0] == 'command') {
-  if(args._[1] && args._[2] && args._[3] && args._[4]) {
+  if(args._[1] && args._[2] && args._[3]) {
     if(args._[1] == 'add') {
       return sync.addCommand(args._[2], args._[3], args._[4], args._[5], args._[6])
     }
@@ -59,7 +56,14 @@ if(args._[0] == 'command') {
       return sync.removeCommand(args._[2], args._[3])
     }
   }
-  throw exception('Error with command formatting: '+args._[0]+' '+args._[1]+' '+args._[2]);
+  throw new Error('Error with command formatting: '+args._[0]+' '+args._[1]+' '+args._[2]);
+}
+
+if(args._[0] == 'schemaMerge') {
+  if(args._[1]) {
+    return sync.schemaMerge(Buffer.from(args._[1], 'base64').toString())
+  }
+  return
 }
 
 namaSyncInit();

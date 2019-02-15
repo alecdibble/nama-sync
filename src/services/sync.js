@@ -4,46 +4,24 @@ const moment = require('moment');
 
 
 
-syncSchemaBackToNama = (schema) => {
-  shell.exec('nama-sync-helper -d ' + schema, {silent:true}, function(code, stdout, stderr) {
-    console.log('Exit code:', code);
+syncSchemaBackToNama = (schema, last_modified = moment().unix()) => {
+  shell.exec('nama-sync-helper -d ' + Buffer.from(schema).toString('base64'), {silent:true}, function(code, stdout, stderr) {
     if(code == 0) {
-
+      return
     }
-    console.log('Program output:', stdout);
-    console.log('Program stderr:', stderr);
+  });
+  shell.exec('nama-sync-helper -t '+ last_modified, {silent:true}, function(code, stdout, stderr) {
+    if(code == 0) {
+      return
+    }
   });
 }
 
-
 module.exports ={ 
-  addNamespace: (namespace, description = null) => {
-    server.post('/namespace/add', {namespace: namespace, descirption: description})
-    .then((res) => {
-      console.log(res.data)
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-  },
   removeNamespace: (namespace) => {
     server.post('/namespace/remove', {namespace: namespace})
     .then((res) => {
-      console.log(res.data)
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-  },
-  addCommand: (namespace, commandName, command, updatedAt = moment().unix(), description=null ) => {
-    server.post('/command/add', 
-      {namespace: namespace, 
-        command_name: commandName, 
-        command: command, updated_at: 
-        updatedAt, 
-        description: description})
-    .then((res) => {
-      console.log(res.data)
+      syncSchemaBackToNama(res.data['schema'])
     })
     .catch((err) => {
       console.log(err)
@@ -54,24 +32,48 @@ module.exports ={
       {namespace: namespace, 
         command_name: commandName,})
     .then((res) => {
-      console.log(res.data)
+      syncSchemaBackToNama(res.data['schema'])
     })
     .catch((err) => {
       console.log(err)
     })
   },
-  initialSync: () => {
-
-    //Check and see if nama data has been modified since last sync
-    //  -If so, grab it and send to server
-
-    //Check server to see if there are any updates
-    //Store updates locally
-
+  schemaMerge: (schema) => {
+    server.post('/schema/merge', 
+      {schema: schema})
+    .then((res) => {
+      syncSchemaBackToNama(res.data['schema'], res.data['last_modified'])
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  },
+  namaSync: () => {
     shell.exec('nama-sync-helper -s', {silent:true}, function(code, stdout, stderr) {
-      console.log('Exit code:', code);
       if(code == 0) {
-        console.log('Program output:', stdout);
+        parseSchema = Buffer.from(stdout, 'base64').toString()
+        module.exports.schemaMerge(parseSchema)
+        console.log("Local Nama and cloud have been synced!")
+      }
+    });
+  },
+  checkForChanges: () => {
+    shell.exec('nama-sync-helper -t', {silent:true}, function(code, stdout, stderr) {
+      if(code == 0) {
+        server.get('/get_changes', {last_modified: stdout})
+        .then((res) => {
+          if(res.data['status'] == 'no changes') {
+            return console.log("No changes since the last synchronization")
+          }
+          else {
+            console.log("Changes detected, syncing with the cloud")
+            module.exports.namaSync();
+            return console.log("Changes synced")
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
       }
     });
   }
