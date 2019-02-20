@@ -1,7 +1,7 @@
 const shell = require('shelljs');
 const server = require('./http');
+const storage = require('./storage');
 const moment = require('moment');
-
 
 
 syncSchemaBackToNama = (schema, last_modified = moment().unix()) => {
@@ -53,7 +53,7 @@ module.exports ={
       if(code == 0) {
         parseSchema = Buffer.from(stdout, 'base64').toString()
         module.exports.schemaMerge(parseSchema)
-        console.log("Local Nama and cloud have been synced!")
+        console.log("Your Nama data has been synced with the AliaSync cloud!")
       }
     });
   },
@@ -72,7 +72,14 @@ module.exports ={
           }
         })
         .catch((err) => {
-          console.log(err)
+          if(err['response']['status'] == '403') {
+            storage.deleteConfig();
+            console.log("\x1b[31mYou have been logged out of AliaSync or your session has expired.\x1b[0m")
+            console.log("\x1b[31mPlease run the previous command again to login or create an account.\x1b[0m")
+          }
+          else {
+            console.log("Error with sync operation.")
+          }
         })
       }
     });

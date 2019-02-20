@@ -1,12 +1,15 @@
 const axios = require('axios');
 const queryString = require('querystring');
+const storage = require('./storage')
 
-const apiBase = "http://52197dbc.ngrok.io/api/v1";
+const apiBase = "https://aliasync.com/api/v1";
 
-const config = require('./storage').getConfig();
+
+
 
 module.exports = {
   post: (url, data) => {
+    var config = storage.getConfig()
     if(config) {
       data['id'] = config['id']
       data['token'] = config['token']
@@ -14,6 +17,7 @@ module.exports = {
     return axios.post(apiBase + url, data)
   },
   get: (url, query) => {
+    var config = storage.getConfig()
     if(config) {
       query['id'] = config['id'];
       query['token'] = config['token']

@@ -31,7 +31,7 @@ const passwordConfirmValidator = (value, answers) => {
 function accountPrompt() {
   inquirer.prompt({
     type: 'confirm',
-    message: 'Do you already have an account with AliasSync?',
+    message: 'Do you already have an account with AliaSync?',
     name: 'account',
     default: false,
     validate: passwordValidator
@@ -41,7 +41,7 @@ function accountPrompt() {
     }
     else {
       console.log(" ")
-      console.log("No account? That's ok! Let's quickly create an account to enable cloud sync functionality!");
+      console.log("No account? That's ok! Let's quickly create a free account to enable cloud sync functionality!");
       console.log(" ")
       emailPrompt();
     }
