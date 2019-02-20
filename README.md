@@ -36,7 +36,7 @@ If you run into permissions issues, please follow [this guide](https://docs.npmj
 
 ## Registering for an account
 
-Once nama-sync is installed, you will be prompted to login or register for an account. AliaSync is free and the base functionality will always stay free. Additionally, the data will always stay private. Your email or data will never be mined or sold to third parties.
+Once nama-sync is installed, please run `name-sync` or `aliasync`. You will be prompted to login or register for an account. AliaSync is free and the base functionality will always stay free. Additionally, your data will always stay private. Your email or data will never be mined or sold to third parties. Your password is encrypted with Bcrypt and the latest best security best practices are utilized. Penetration testing is planned for the future.
 
 ## Why are nama & nama-sync seperate packages?
 
